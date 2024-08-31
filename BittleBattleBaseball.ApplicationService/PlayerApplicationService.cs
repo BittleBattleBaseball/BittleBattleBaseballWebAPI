@@ -1,5 +1,6 @@
 ﻿using BittleBattleBaseball.Models.DomainModels;
 using BittleBattleBaseball.Models.DTOs;
+using BittleBattleBaseball.Models.MLBAPI.Responses;
 using BittleBattleBaseball.Models.ViewModels;
 using Newtonsoft.Json;
 using System;
@@ -8,6 +9,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace BittleBattleBaseball.ApplicationService
@@ -139,186 +142,160 @@ namespace BittleBattleBaseball.ApplicationService
         #endregion
 
         #region Hitting
-        public HitterPlayerSeasonViewModel GetPlayerProjectedSeasonHittingStats(int season, int playerId, string leagueListId)
-        {            
-            string jsonData = this.GetSeasonProjectedHittingStatsJson(season, playerId, leagueListId);
+        //public HitterPlayerSeasonViewModel GetPlayerProjectedSeasonHittingStats(int season, int playerId, string leagueListId)
+        //{            
+        //    string jsonData = this.GetSeasonProjectedHittingStatsJson(season, playerId, leagueListId);
 
-            try
-            {
-                GetPlayerProjectedSeasonHittingSingleTeamStatsDTO dto = GetPlayerProjectedSeasonHittingSingleTeamStatsDTO.FromJson(jsonData);
-                return GetPlayerSeasonHittingSingleTeamViewModelFromDTO(dto);
-            }
-            catch (JsonSerializationException)
-            {
-                try
-                {
-                    GetPlayerSeasonHittingMultiTeamStatsDTO dto = GetPlayerSeasonHittingMultiTeamStatsDTO.FromJson(jsonData);
-                    return GetPlayerSeasonHittingMultiTeamViewModelFromDTO(dto);
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.ToString());
-                return null;
-            }
-        }
+        //    try
+        //    {
+        //        GetPlayerProjectedSeasonHittingSingleTeamStatsDTO dto = GetPlayerProjectedSeasonHittingSingleTeamStatsDTO.FromJson(jsonData);
+        //        return GetPlayerSeasonHittingSingleTeamViewModelFromDTO(dto);
+        //    }
+        //    catch (JsonSerializationException)
+        //    {
+        //        try
+        //        {
+        //            GetPlayerSeasonHittingMultiTeamStatsDTO dto = GetPlayerSeasonHittingMultiTeamStatsDTO.FromJson(jsonData);
+        //            return GetPlayerSeasonHittingMultiTeamViewModelFromDTO(dto);
+        //        }
+        //        catch
+        //        {
+        //            return null;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine(ex.ToString());
+        //        return null;
+        //    }
+        //}
 
-        public HitterPlayerSeasonViewModel GetPlayerSeasonHittingStats(int season, int playerId, string leagueListId, string gameType)
+        public async Task<HitterPlayerSeasonViewModel> GetPlayerSeasonHittingStats(int season, int playerId, int teamId)
         {
-            string jsonData = this.GetSeasonHittingStatsJson(season, playerId, leagueListId, gameType);
-
-            try
+            using (HttpClient client = new HttpClient())
             {
-                GetPlayerSeasonHittingSingleTeamStatsDTO dto = GetPlayerSeasonHittingSingleTeamStatsDTO.FromJson(jsonData);
-                return GetPlayerSeasonHittingSingleTeamViewModelFromDTO(dto);
-            }
-            catch(JsonSerializationException)
-            {
-                try
-                {
-                    GetPlayerSeasonHittingMultiTeamStatsDTO dto = GetPlayerSeasonHittingMultiTeamStatsDTO.FromJson(jsonData);
-                    return GetPlayerSeasonHittingMultiTeamViewModelFromDTO(dto);
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-            catch(Exception ex)
-            {
-                Debug.WriteLine(ex.ToString());
-                return null;
+                string responseBody = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/stats?stats=season&group=hitting&season={season}&teamId={teamId}&personId={playerId}");
+                PlayerSeasonHittingStatsResponse dto = JsonConvert.DeserializeObject<PlayerSeasonHittingStatsResponse>(responseBody);
+                return GetPlayerSeasonHittingSingleTeamViewModelFromDTO(dto, teamId, playerId);
             }
         }
 
-        private string GetSeasonHittingStatsJson(int season, int playerId, string leagueListId, string gameType)
-        {
-            string url = $"https://mlb-data.p.rapidapi.com/json/named.sport_hitting_tm.bam?season=\'{season}\'&player_id=\'{playerId}\'&league_list_id=\'{leagueListId}\'&game_type=\'{gameType}\'";
-            var request = (HttpWebRequest)WebRequest.Create(url);
+        //private string GetSeasonHittingStatsJson(int season, int playerId, string leagueListId, string gameType)
+        //{
+        //    string url = $"https://mlb-data.p.rapidapi.com/json/named.sport_hitting_tm.bam?season=\'{season}\'&player_id=\'{playerId}\'&league_list_id=\'{leagueListId}\'&game_type=\'{gameType}\'";
+        //    var request = (HttpWebRequest)WebRequest.Create(url);
 
-            request.Method = "GET";
-            request.Headers.Add("x-rapidapi-host", "mlb-data.p.rapidapi.com");
-            request.Headers.Add("x-rapidapi-key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");          
+        //    request.Method = "GET";
+        //    request.Headers.Add("x-rapidapi-host", "mlb-data.p.rapidapi.com");
+        //    request.Headers.Add("x-rapidapi-key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");          
 
-            var content = string.Empty;
+        //    var content = string.Empty;
 
-            using (var response = (HttpWebResponse)request.GetResponse())
-            {
-                using (var stream = response.GetResponseStream())
-                {
-                    using (var sr = new StreamReader(stream))
-                    {
-                        content = sr.ReadToEnd();
-                    }
-                }
-            }
+        //    using (var response = (HttpWebResponse)request.GetResponse())
+        //    {
+        //        using (var stream = response.GetResponseStream())
+        //        {
+        //            using (var sr = new StreamReader(stream))
+        //            {
+        //                content = sr.ReadToEnd();
+        //            }
+        //        }
+        //    }
 
-            return content;
-        }
+        //    return content;
+        //}
 
-        private string GetSeasonProjectedHittingStatsJson(int season, int playerId, string leagueListId)
-        {
-            string url = $"https://mlb-data.p.rapidapi.com/json/named.proj_pecota_batting.bam?season=\'{season}\'&player_id=\'{playerId}\'&league_list_id=\'{leagueListId}\'";
-            var request = (HttpWebRequest)WebRequest.Create(url);
+        //private string GetSeasonProjectedHittingStatsJson(int season, int playerId, string leagueListId)
+        //{
+        //    string url = $"https://mlb-data.p.rapidapi.com/json/named.proj_pecota_batting.bam?season=\'{season}\'&player_id=\'{playerId}\'&league_list_id=\'{leagueListId}\'";
+        //    var request = (HttpWebRequest)WebRequest.Create(url);
 
-            request.Method = "GET";
-            request.Headers.Add("x-rapidapi-host", "mlb-data.p.rapidapi.com");
-            request.Headers.Add("x-rapidapi-key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");
+        //    request.Method = "GET";
+        //    request.Headers.Add("x-rapidapi-host", "mlb-data.p.rapidapi.com");
+        //    request.Headers.Add("x-rapidapi-key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");
 
-            var content = string.Empty;
+        //    var content = string.Empty;
 
-            using (var response = (HttpWebResponse)request.GetResponse())
-            {
-                using (var stream = response.GetResponseStream())
-                {
-                    using (var sr = new StreamReader(stream))
-                    {
-                        content = sr.ReadToEnd();
-                    }
-                }
-            }
+        //    using (var response = (HttpWebResponse)request.GetResponse())
+        //    {
+        //        using (var stream = response.GetResponseStream())
+        //        {
+        //            using (var sr = new StreamReader(stream))
+        //            {
+        //                content = sr.ReadToEnd();
+        //            }
+        //        }
+        //    }
 
-            return content;
-        }
+        //    return content;
+        //}
 
-        private static HitterPlayerSeasonViewModel GetPlayerSeasonHittingMultiTeamViewModelFromDTO(GetPlayerSeasonHittingMultiTeamStatsDTO dto)
+        //private static HitterPlayerSeasonViewModel GetPlayerSeasonHittingMultiTeamViewModelFromDTO(GetPlayerSeasonHittingMultiTeamStatsDTO dto)
+        //{
+        //    HitterPlayerSeasonViewModel returnVal = new HitterPlayerSeasonViewModel();
+
+        //    if(dto != null && dto.sport_hitting_tm != null && dto.sport_hitting_tm.queryResults != null && dto.sport_hitting_tm.queryResults.row != null)
+        //    {
+        //        foreach (Stat playerStats in dto.sport_hitting_tm.queryResults.row)
+        //        {
+        //            PopulateBattingStats(returnVal, playerStats);
+        //        }
+        //    }
+
+        //    return returnVal;
+        //}
+
+        private static HitterPlayerSeasonViewModel GetPlayerSeasonHittingSingleTeamViewModelFromDTO(PlayerSeasonHittingStatsResponse dto, int teamId, int playerId)
         {
             HitterPlayerSeasonViewModel returnVal = new HitterPlayerSeasonViewModel();
-            
-            if(dto != null && dto.sport_hitting_tm != null && dto.sport_hitting_tm.queryResults != null && dto.sport_hitting_tm.queryResults.row != null)
+
+            if (dto != null && dto.stats != null)
             {
-                foreach (Stat playerStats in dto.sport_hitting_tm.queryResults.row)
+                var playerStat = dto.stats.FirstOrDefault();
+                var playerSplit = playerStat.splits.FirstOrDefault(s => s.rank == 1);
+                if (playerSplit != null)
                 {
-                    PopulateBattingStats(returnVal, playerStats);
+                    var playerStats = playerSplit.stat;
+                    PopulateBattingStats(returnVal, playerStats, playerId);
                 }
             }
 
             return returnVal;
         }
 
-        private static HitterPlayerSeasonViewModel GetPlayerSeasonHittingSingleTeamViewModelFromDTO(GetPlayerSeasonHittingSingleTeamStatsDTO dto)
+        //private static HitterPlayerSeasonViewModel GetPlayerSeasonHittingSingleTeamViewModelFromDTO(GetPlayerProjectedSeasonHittingSingleTeamStatsDTO dto)
+        //{
+        //    HitterPlayerSeasonViewModel returnVal = new HitterPlayerSeasonViewModel();
+
+        //    if (dto != null && dto.proj_pecota_batting != null && dto.proj_pecota_batting.queryResults != null && dto.proj_pecota_batting.queryResults.row != null)
+        //    {
+        //        var playerStats = dto.;
+        //        PopulateBattingStats(returnVal, playerStats);
+        //    }
+
+        //    return returnVal;
+        //}
+
+        private static void PopulateBattingStats(HitterPlayerSeasonViewModel hitterInfo, HittingStats playerStats, int playerId)
         {
-            HitterPlayerSeasonViewModel returnVal = new HitterPlayerSeasonViewModel();
-
-            if (dto != null && dto.sport_hitting_tm != null && dto.sport_hitting_tm.queryResults != null && dto.sport_hitting_tm.queryResults.row != null)
-            {
-                var playerStats = dto.sport_hitting_tm.queryResults.row;
-                PopulateBattingStats(returnVal, playerStats);
-            }
-
-            return returnVal;
-        }
-
-        private static HitterPlayerSeasonViewModel GetPlayerSeasonHittingSingleTeamViewModelFromDTO(GetPlayerProjectedSeasonHittingSingleTeamStatsDTO dto)
-        {
-            HitterPlayerSeasonViewModel returnVal = new HitterPlayerSeasonViewModel();
-
-            if (dto != null && dto.proj_pecota_batting != null && dto.proj_pecota_batting.queryResults != null && dto.proj_pecota_batting.queryResults.row != null)
-            {
-                var playerStats = dto.proj_pecota_batting.queryResults.row;
-                PopulateBattingStats(returnVal, playerStats);
-            }
-
-            return returnVal;
-        }
-
-        private static void PopulateBattingStats(HitterPlayerSeasonViewModel hitterInfo, Stat playerStats)
-        {
-            hitterInfo.AB = !playerStats.ab.Contains("-") ? Convert.ToInt32(playerStats.ab) : 0;
-            hitterInfo.AVG = !playerStats.avg.Contains("-") ? Convert.ToDecimal( playerStats.avg) : 0;
-            hitterInfo.OBP = !playerStats.obp.Contains("-") ? Convert.ToDecimal(playerStats.obp) : 0;
-            hitterInfo.SLG = !playerStats.slg.Contains("-") ? Convert.ToDecimal(playerStats.slg) : 0;
-            hitterInfo.HR = !playerStats.hr.Contains("-") ? Convert.ToInt32(playerStats.hr) : 0;
-            hitterInfo.RBI = !playerStats.rbi.Contains("-") ? Convert.ToInt32(playerStats.rbi) : 0;
-            hitterInfo.BB = !playerStats.bb.Contains("-") ? Convert.ToInt32(playerStats.bb) : 0;
-
-           
-
-            if(!string.IsNullOrWhiteSpace(playerStats.sb))
-                hitterInfo.SB = !playerStats.sb.Contains("-") ? Convert.ToInt32(playerStats.sb) : 0;
-
-            if (!string.IsNullOrWhiteSpace(playerStats.cs))
-                hitterInfo.CS = !playerStats.cs.Contains("-") ? Convert.ToInt32(playerStats.cs) : 0;
-
-            if (!string.IsNullOrWhiteSpace(playerStats.gidp))
-                hitterInfo.GIDP = !playerStats.gidp.Contains("-") ? Convert.ToInt32(playerStats.gidp) : 0;
-
-            hitterInfo.H = !playerStats.h.Contains("-") ? Convert.ToInt32(playerStats.h) : 0;
-            hitterInfo.R = !playerStats.r.Contains("-") ? Convert.ToInt32(playerStats.r) : 0;
-
-            if (!string.IsNullOrWhiteSpace(playerStats.so))
-                hitterInfo.SO = !playerStats.so.Contains("-") ? Convert.ToInt32(playerStats.so) : 0;
-
-            if (!string.IsNullOrWhiteSpace(playerStats.xbh))
-                hitterInfo.XBH = !playerStats.xbh.Contains("-") ? Convert.ToInt32(playerStats.xbh) : 0;
+            hitterInfo.AB = playerStats.atBats;
+            hitterInfo.AVG = Convert.ToDecimal( playerStats.avg);
+            hitterInfo.OBP = Convert.ToDecimal(playerStats.obp);
+            hitterInfo.SLG = Convert.ToDecimal(playerStats.slg);
+            hitterInfo.HR = playerStats.homeRuns;
+            hitterInfo.RBI = playerStats.rbi;
+            hitterInfo.BB = playerStats.baseOnBalls;
+            hitterInfo.SB = playerStats.stolenBases;
+            hitterInfo.CS = playerStats.caughtStealing;
+            hitterInfo.GIDP = playerStats.groundIntoDoublePlay;
+            hitterInfo.H = playerStats.hits;
+            hitterInfo.R = playerStats.runs;
+            hitterInfo.SO = playerStats.strikeOuts;
+            hitterInfo.XBH =  playerStats.doubles + playerStats.triples + playerStats.homeRuns;
 
             hitterInfo.Player = new PlayerViewModel
             {
-                Id = Convert.ToInt32(playerStats.player_id)
+                Id = playerId
             };
         }
 
@@ -326,97 +303,96 @@ namespace BittleBattleBaseball.ApplicationService
 
         #region Pitching
 
-        public PitcherPlayerSeasonViewModel GetPlayerSeasonPitchingStats(int season, int playerId, string leagueListId, string gameType)
+        public async Task<PitcherPlayerSeasonViewModel> GetPlayerSeasonPitchingStats(int season, int playerId, int teamId)
         {
-            string jsonData = this.GetSeasonPitchingStatsJson(season, playerId, leagueListId, gameType);
-
-            try
+            using (HttpClient client = new HttpClient())
             {
-                GetPlayerSeasonPitchingSingleTeamStatsDTO dto = GetPlayerSeasonPitchingSingleTeamStatsDTO.FromJson(jsonData);
-                return GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(dto);
-            }
-            catch (Newtonsoft.Json.JsonSerializationException)
-            {
-                try
-                {
-                    GetPlayerSeasonPitchingMultiTeamStatsDTO dto = GetPlayerSeasonPitchingMultiTeamStatsDTO.FromJson(jsonData);
-                    return GetPlayerSeasonPitchingMultiTeamViewModelFromDTO(dto);
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-            catch
-            {
-                return null;
+                string responseBody = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/stats?stats=season&group=pitching&season={season}&teamId={teamId}&personId={playerId}");
+                PlayerSeasonPitchingStatsResponse dto = JsonConvert.DeserializeObject<PlayerSeasonPitchingStatsResponse>(responseBody);
+                return GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(dto, teamId, playerId);
             }
         }
 
-        private string GetSeasonPitchingStatsJson(int season, int playerId, string leagueListId, string gameType)
-        {
-            string url = $"https://mlb-data.p.rapidapi.com/json/named.sport_pitching_tm.bam?season=\'{season}\'&player_id=\'{playerId}\'&league_list_id=\'{leagueListId}\'&game_type=\'{gameType}\'";
-            var request = (HttpWebRequest)WebRequest.Create(url);
+        //private string GetSeasonPitchingStatsJson(int season, int playerId, string leagueListId, string gameType)
+        //{
+        //    string url = $"https://mlb-data.p.rapidapi.com/json/named.sport_pitching_tm.bam?season=\'{season}\'&player_id=\'{playerId}\'&league_list_id=\'{leagueListId}\'&game_type=\'{gameType}\'";
+        //    var request = (HttpWebRequest)WebRequest.Create(url);
 
-            request.Method = "GET";
-            request.Headers.Add("X-RapidAPI-Key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");
-            request.Headers.Add("x-rapidapi-host", "mlb-data.p.rapidapi.com");
+        //    request.Method = "GET";
+        //    request.Headers.Add("X-RapidAPI-Key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");
+        //    request.Headers.Add("x-rapidapi-host", "mlb-data.p.rapidapi.com");
 
-            var content = string.Empty;
+        //    var content = string.Empty;
 
-            using (var response = (HttpWebResponse)request.GetResponse())
-            {
-                using (var stream = response.GetResponseStream())
-                {
-                    using (var sr = new StreamReader(stream))
-                    {
-                        content = sr.ReadToEnd();
-                    }
-                }
-            }
+        //    using (var response = (HttpWebResponse)request.GetResponse())
+        //    {
+        //        using (var stream = response.GetResponseStream())
+        //        {
+        //            using (var sr = new StreamReader(stream))
+        //            {
+        //                content = sr.ReadToEnd();
+        //            }
+        //        }
+        //    }
 
-            return content;
-        }
+        //    return content;
+        //}
 
-        private static PitcherPlayerSeasonViewModel GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(GetPlayerSeasonPitchingSingleTeamStatsDTO dto)
+        private static PitcherPlayerSeasonViewModel GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(PlayerSeasonPitchingStatsResponse dto, int teamId, int playerId)
         {
             PitcherPlayerSeasonViewModel returnVal = new PitcherPlayerSeasonViewModel();
 
-            if (dto != null && dto.sport_pitching_tm != null && dto.sport_pitching_tm.queryResults != null && dto.sport_pitching_tm.queryResults.row != null)
+            if (dto != null && dto.stats != null)
             {
-                var playerStats = dto.sport_pitching_tm.queryResults.row;
-                PopulatePitchingStats(returnVal, playerStats);
-            }
-
-            return returnVal;
-        }
-
-        private static PitcherPlayerSeasonViewModel GetPlayerSeasonPitchingMultiTeamViewModelFromDTO(GetPlayerSeasonPitchingMultiTeamStatsDTO dto)
-        {
-            PitcherPlayerSeasonViewModel returnVal = new PitcherPlayerSeasonViewModel();
-
-            if (dto != null && dto.sport_pitching_tm != null && dto.sport_pitching_tm.queryResults != null && dto.sport_pitching_tm.queryResults.row != null)
-            {
-                foreach (PitchingStat playerStats in dto.sport_pitching_tm.queryResults.row)
+                var playerStat = dto.stats.FirstOrDefault();
+                var playerSplit = playerStat.splits.FirstOrDefault(s => s.rank == 1);
+                if (playerSplit != null)
                 {
-                    PopulatePitchingStats(returnVal, playerStats);
+                    var playerStats = playerSplit.stat;
+                    PopulatePitchingStats(returnVal, playerStats, playerId);
                 }
             }
 
             return returnVal;
         }
 
-        private static void PopulatePitchingStats(PitcherPlayerSeasonViewModel returnVal, PitchingStat playerStats)
-        {
-            returnVal.Wins = !playerStats.w.Contains("-") ? Convert.ToInt32(playerStats.w) : 0;
-            returnVal.Losses = !playerStats.l.Contains("-") ? Convert.ToInt32(playerStats.l) : 0;
-            returnVal.ERA = !playerStats.era.Contains("-") ? Convert.ToDecimal(playerStats.era) : 0;
-            returnVal.WHIP = !playerStats.whip.Contains("*") ? Convert.ToDecimal(playerStats.whip) : 0;
-         
+        //private static PitcherPlayerSeasonViewModel GetPlayerSeasonPitchingMultiTeamViewModelFromDTO(GetPlayerSeasonPitchingMultiTeamStatsDTO dto)
+        //{
+        //    PitcherPlayerSeasonViewModel returnVal = new PitcherPlayerSeasonViewModel();
 
-            returnVal.Player = new PlayerViewModel
+        //    if (dto != null && dto.stats != null)
+        //    {
+        //        var playerStat = dto.stats.FirstOrDefault();
+        //        var playerStats = playerStat.splits.FirstOrDefault(s => s.team.id == teamId && s.player.id == playerId && s.stat != null).stat;
+        //        PopulateBattingStats(returnVal, playerStats, playerId);
+        //    }
+
+        //    return returnVal;
+
+        //    PitcherPlayerSeasonViewModel returnVal = new PitcherPlayerSeasonViewModel();
+
+        //    if (dto != null && dto.sport_pitching_tm != null && dto.sport_pitching_tm.queryResults != null && dto.sport_pitching_tm.queryResults.row != null)
+        //    {
+        //        foreach (PitchingStat playerStats in dto.sport_pitching_tm.queryResults.row)
+        //        {
+        //            PopulatePitchingStats(returnVal, playerStats);
+        //        }
+        //    }
+
+        //    return returnVal;
+        //}
+
+        private static void PopulatePitchingStats(PitcherPlayerSeasonViewModel pitcherInfo, PitchingStats playerStats, int playerId)
+        {
+            pitcherInfo.Wins = playerStats.wins;
+            pitcherInfo.Losses = playerStats.losses;
+            pitcherInfo.ERA = Convert.ToDecimal(playerStats.era);
+            pitcherInfo.WHIP = Convert.ToDecimal(playerStats.whip);
+
+
+            pitcherInfo.Player = new PlayerViewModel
             {
-                Id = Convert.ToInt32(playerStats.player_id)
+                Id = playerId
             };
         }
 

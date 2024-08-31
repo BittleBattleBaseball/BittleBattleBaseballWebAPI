@@ -100,18 +100,18 @@ namespace BittleBattleBaseball.Models.DTOs
         public GetPlayerSeasonPitchingStatsQueryResultsMultiple queryResults { get; set; }
     }
 
-    public partial class GetPlayerSeasonPitchingMultiTeamStatsDTO
-    {
-        public SportPitchingTm sport_pitching_tm { get; set; }
-    }
+    //public partial class GetPlayerSeasonPitchingMultiTeamStatsDTO
+    //{
+    //    public SportPitchingTm sport_pitching_tm { get; set; }
+    //}
 
-    public partial class GetPlayerSeasonPitchingMultiTeamStatsDTO
-    {
-        public static GetPlayerSeasonPitchingMultiTeamStatsDTO FromJson(string json) => JsonConvert.DeserializeObject<GetPlayerSeasonPitchingMultiTeamStatsDTO>(json, Converter.Settings);
-    }
+    //public partial class GetPlayerSeasonPitchingMultiTeamStatsDTO
+    //{
+    //    public static GetPlayerSeasonPitchingMultiTeamStatsDTO FromJson(string json) => JsonConvert.DeserializeObject<GetPlayerSeasonPitchingMultiTeamStatsDTO>(json, Converter.Settings);
+    //}
 
-    public static class GetPlayerSeasonPitchingMultiTeamStatsDTOSerialize
-    {
-        public static string ToJson(this GetPlayerSeasonPitchingMultiTeamStatsDTO self) => JsonConvert.SerializeObject(self, Converter.Settings);
-    }
+    //public static class GetPlayerSeasonPitchingMultiTeamStatsDTOSerialize
+    //{
+    //    public static string ToJson(this GetPlayerSeasonPitchingMultiTeamStatsDTO self) => JsonConvert.SerializeObject(self, Converter.Settings);
+    //}
 }
