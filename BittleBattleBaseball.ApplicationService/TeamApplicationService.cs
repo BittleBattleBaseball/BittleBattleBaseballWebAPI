@@ -1,5 +1,7 @@
 ﻿using BittleBattleBaseball.Models.DTOs;
+using BittleBattleBaseball.Models.MLBAPI.Responses;
 using BittleBattleBaseball.Models.ViewModels;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace BittleBattleBaseball.ApplicationService
@@ -17,53 +20,56 @@ namespace BittleBattleBaseball.ApplicationService
 
         public async Task<List<TeamSearchResultViewModel>> GetTeamsBySeason(string league, int season)
         {
-            string jsonData = await this.GetTeamsBySeasonJsonAsync(season);
+            if(league == null) throw new ArgumentNullException(nameof(league));
 
-            GetTeamsBySeasonDTO teamsBySeasonDto = GetTeamsBySeasonDTO.FromJson(jsonData);
+            if(season == 0) throw new ArgumentNullException(nameof(season));
 
-            if (string.IsNullOrEmpty(league))
-                league = "mlb";
+            int sportId = 1;//Default to mlb
 
-            return await GetTeamsBySeasonViewModelFromDTO(league, season, teamsBySeasonDto);
+            using (HttpClient client = new HttpClient())
+            {
+                string apiResponse = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/teams?season={season}&sportId={sportId}");
+
+                TeamsBySeasonResponse teamsBySeasonResponse = JsonConvert.DeserializeObject<TeamsBySeasonResponse>(apiResponse);
+                return ConvertResponseToViewModel(teamsBySeasonResponse);
+            }
+
+            //*******************************************************************************************************
+
+            //string jsonData = await this.GetTeamsBySeasonJsonAsync(season);
+
+            //GetTeamsBySeasonDTO teamsBySeasonDto = GetTeamsBySeasonDTO.FromJson(jsonData);
+
+            //if (string.IsNullOrEmpty(league))
+            //    league = "mlb";
+
+            //return await GetTeamsBySeasonViewModelFromDTO(league, season, teamsBySeasonDto);
         }
 
-        public async Task<RosterSearchResultViewModel> GetRosterBySeason(string league, int season, int teamId, bool isDesignatedHitterEnabled)
-        {
-            string jsonData = await this.GetRosterBySeasonJsonAsync(season, teamId);
+        #region NEW MLB API DIRECT API CALLS
 
-            GetRosterBySeasonDTO getRosterBySeasonDTO = GetRosterBySeasonDTO.FromJson(jsonData);
-
-            return await GetRosterBySeasonViewModelFromDTO(league, season, teamId, isDesignatedHitterEnabled, getRosterBySeasonDTO);
-        }
-
-        private static async Task<List<TeamSearchResultViewModel>> GetTeamsBySeasonViewModelFromDTO(string league, int season, GetTeamsBySeasonDTO teamsBySeasonDto)
+        private static List<TeamSearchResultViewModel> ConvertResponseToViewModel(TeamsBySeasonResponse teamsBySeasonResponse)
         {
             List<TeamSearchResultViewModel> returnList = new List<TeamSearchResultViewModel>();
 
-            if (teamsBySeasonDto != null && teamsBySeasonDto.team_all_season != null
-                && teamsBySeasonDto.team_all_season.queryResults != null && teamsBySeasonDto.team_all_season.queryResults.row != null)
+            if (teamsBySeasonResponse != null && teamsBySeasonResponse.teams != null)
             {
-                foreach (TeamSearchResult teamResult in teamsBySeasonDto.team_all_season.queryResults.row)
+                foreach (var teamResult in teamsBySeasonResponse.teams)
                 {
-                    if (!string.IsNullOrEmpty(teamResult.sport_code) && teamResult.sport_code.ToLower() == league
-                        && !string.IsNullOrWhiteSpace(teamResult.venue_name)
-                        && teamResult.name_display_full.ToLower() != "to be determined"
-                        && teamResult.name_display_full.ToLower() != "office of the commissioner"
-                        && !teamResult.name_display_full.ToLower().Contains("all-star")
-                        && teamResult.venue_name.ToLower() != "al city" && teamResult.venue_name.ToLower() != "nl city" && teamResult.venue_name.ToLower() != "tbd")
+                    if (teamResult.league != null && (teamResult.league.id == 103 || teamResult.league.id == 104)) //103 is American League and 104 is National League (Ignore other results like negro leagues for now)
                     {
                         returnList.Add(new TeamSearchResultViewModel
                         {
-                            Id = Convert.ToInt32(teamResult.team_id),
-                            TeamName = teamResult.name_display_full,
-                            League = teamResult.league,
-                            Season = season,
-                            Ballpark = teamResult.venue_name,
+                            Id = Convert.ToInt32(teamResult.id),
+                            TeamName = teamResult.teamName,
+                            League = teamResult.league.name,
+                            Season = teamResult.season,
+                            Ballpark = teamResult.venue.name,
                             Name = teamResult.name,
-                            FullTeamName = teamResult.name_display_full,
-                            City = teamResult.city,
-                            NameAbbrev = teamResult.name_abbrev,
-                            LogoUrl = "https://d2p3bygnnzw9w3.cloudfront.net/req/202001161/tlogo/br/" + teamResult.name_abbrev + "-" + season + ".png"
+                            FullTeamName = teamResult.name,
+                            City = teamResult.shortName, //TODO - This may be wrong
+                            NameAbbrev = teamResult.abbreviation,
+                            LogoUrl = "https://d2p3bygnnzw9w3.cloudfront.net/req/202001161/tlogo/br/" + teamResult.abbreviation + "-" + teamResult.season + ".png"
                         });
                     }
                     else
@@ -78,6 +84,20 @@ namespace BittleBattleBaseball.ApplicationService
 
             return returnList.OrderByDescending(x => x.League).ToList();
         }
+
+
+        #endregion
+
+        public async Task<RosterSearchResultViewModel> GetRosterBySeason(string league, int season, int teamId, bool isDesignatedHitterEnabled)
+        {
+            string jsonData = await this.GetRosterBySeasonJsonAsync(season, teamId);
+
+            GetRosterBySeasonDTO getRosterBySeasonDTO = GetRosterBySeasonDTO.FromJson(jsonData);
+
+            return await GetRosterBySeasonViewModelFromDTO(league, season, teamId, isDesignatedHitterEnabled, getRosterBySeasonDTO);
+        }
+
+    
 
         private static async Task<RosterSearchResultViewModel> GetRosterBySeasonViewModelFromDTO(string league, int season, int teamId, bool isDesignatedHitterEnabled, GetRosterBySeasonDTO dto)
         {
@@ -174,48 +194,9 @@ namespace BittleBattleBaseball.ApplicationService
             }
 
             return returnVal;
-        }
+        }     
 
-        private async Task<string> GetTeamsBySeasonJsonAsync(int season)
-        {
-            string url = $"https://mlb-data.p.rapidapi.com/json/named.team_all_season.bam?season=\'{season}\'&all_star_sw=\'N\'";
-            HttpClient _httpClient = new HttpClient();
-
-            var request = (HttpWebRequest)WebRequest.Create(url);
-
-            _httpClient.DefaultRequestHeaders.Add("X-RapidAPI-Key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");
-
-            var task = await _httpClient.GetAsync(url).ConfigureAwait(false);
-
-            task.EnsureSuccessStatusCode();
-
-            return await task.Content.ReadAsStringAsync();
-        }
-
-        [Obsolete]
-        private async Task<string> GetTeamsBySeasonJson(int season)
-        {
-            string url = $"https://mlb-data.p.rapidapi.com/json/named.team_all_season.bam?season=\'{season}\'&all_star_sw=\'N\'";
-            var request = (HttpWebRequest)WebRequest.Create(url);
-
-            request.Method = "GET";
-            request.Headers.Add("X-RapidAPI-Key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");
-
-            var content = string.Empty;
-
-            using (var response = (HttpWebResponse)request.GetResponse())
-            {
-                using (var stream = response.GetResponseStream())
-                {
-                    using (var sr = new StreamReader(stream))
-                    {
-                        content = sr.ReadToEnd();
-                    }
-                }
-            }
-
-            return content;
-        }
+      
 
         private async Task<string> GetRosterBySeasonJsonAsync(int season, int teamId)
         {
@@ -231,31 +212,6 @@ namespace BittleBattleBaseball.ApplicationService
             task.EnsureSuccessStatusCode();
 
             return await task.Content.ReadAsStringAsync();
-        }
-
-        [Obsolete]
-        private string GetRosterBySeasonJson(int season, int teamId)
-        {
-            string url = $"https://mlb-data.p.rapidapi.com/json/named.roster_team_alltime.bam?team_id=\'{teamId}\'&start_season=\'{season}\'&end_season=\'{season}\'";
-            var request = (HttpWebRequest)WebRequest.Create(url);
-
-            request.Method = "GET";
-            request.Headers.Add("X-RapidAPI-Key", "af5352e3e5msh027e7a5c8c8cc76p157788jsndab27210c9c4");
-
-            var content = string.Empty;
-
-            using (var response = (HttpWebResponse)request.GetResponse())
-            {
-                using (var stream = response.GetResponseStream())
-                {
-                    using (var sr = new StreamReader(stream))
-                    {
-                        content = sr.ReadToEnd();
-                    }
-                }
-            }
-
-            return content;
         }
     }
 }
