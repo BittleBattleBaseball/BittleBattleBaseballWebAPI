@@ -37,7 +37,7 @@ namespace BittleBattleBaseball.ApplicationService
 
             if (teamsBySeasonResponse != null && teamsBySeasonResponse.teams != null)
             {
-                foreach (var teamResult in teamsBySeasonResponse.teams)
+                foreach (var teamResult in teamsBySeasonResponse.teams.OrderBy(t => t.league.name).ThenBy(tb => tb.name))
                 {
                     if (teamResult.league != null && (teamResult.league.id == 103 || teamResult.league.id == 104)) //103 is American League and 104 is National League (Ignore other results like negro leagues for now)
                     {
