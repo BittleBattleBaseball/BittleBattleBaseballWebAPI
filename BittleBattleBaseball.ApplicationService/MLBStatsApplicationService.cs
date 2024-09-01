@@ -105,15 +105,15 @@ namespace BittleBattleBaseball.ApplicationService
 
         private static void LoadBattingJson()
         {
-        
+
 
             //var currDir = System.IO.Directory.GetCurrentDirectory();
-            string envCurrDir = Environment.CurrentDirectory;
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "MLBYearByYearLeagueBattingStats.json");//Environment.CurrentDirectory;
 
            // var execPath = System.IO.Path.GetDirectory(Application.ExecutablePath);
-            if (File.Exists(envCurrDir + @"\MLBYearByYearLeagueBattingStats.json"))
+            if (File.Exists(fullPath))
             {
-                using (StreamReader r = new StreamReader(envCurrDir + @"\MLBYearByYearLeagueBattingStats.json"))
+                using (StreamReader r = new StreamReader(fullPath))
                 {
                     string json = r.ReadToEnd();
                     _mLBYearByYearBattingStatsCache = JsonConvert.DeserializeObject<IEnumerable<MLBYearByYearBattingStatsDTO>>(json).ToList();
@@ -123,10 +123,11 @@ namespace BittleBattleBaseball.ApplicationService
 
         private static void LoadPitchingJson()
         {
-            string envCurrDir = Environment.CurrentDirectory;
-            if (File.Exists(envCurrDir+ @"\MLBYearByYearLeaguePitchingStats.json"))
+            //string envCurrDir = Environment.CurrentDirectory;
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "MLBYearByYearLeaguePitchingStats.json");
+            if (File.Exists(fullPath))
             {
-                using (StreamReader r = new StreamReader(envCurrDir + @"\MLBYearByYearLeaguePitchingStats.json"))
+                using (StreamReader r = new StreamReader(fullPath))
                 {
                     string json = r.ReadToEnd();
                     _mLBYearByYearPitchingStatsCache = JsonConvert.DeserializeObject<IEnumerable<MLBYearByYearPitchingStatsDTO>>(json).ToList();
