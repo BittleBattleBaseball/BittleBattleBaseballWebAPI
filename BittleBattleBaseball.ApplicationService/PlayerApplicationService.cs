@@ -159,7 +159,7 @@ namespace BittleBattleBaseball.ApplicationService
             if (dto != null && dto.stats != null)
             {
                 var playerStat = dto.stats.FirstOrDefault();
-                var playerSplit = playerStat.splits.FirstOrDefault(s => s.rank == 1);
+                var playerSplit = playerStat.splits.FirstOrDefault(s => s.player.id == playerId);
                 if (playerSplit != null)
                 {
                     var playerStats = playerSplit.stat;
@@ -214,7 +214,7 @@ namespace BittleBattleBaseball.ApplicationService
             if (dto != null && dto.stats != null)
             {
                 var playerStat = dto.stats.FirstOrDefault();
-                var playerSplit = playerStat.splits.FirstOrDefault(s => s.rank == 1);
+                var playerSplit = playerStat.splits.FirstOrDefault(s => s.player.id == playerId);
                 if (playerSplit != null)
                 {
                     var playerStats = playerSplit.stat;
