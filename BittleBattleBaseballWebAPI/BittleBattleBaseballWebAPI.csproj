@@ -22,5 +22,14 @@
     <ProjectReference Include="..\BittleBattleBaseball.Models\BittleBattleBaseball.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="MLBYearByYearLeagueBattingStats.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="MLBYearByYearLeaguePitchingStats.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 
 </Project>
