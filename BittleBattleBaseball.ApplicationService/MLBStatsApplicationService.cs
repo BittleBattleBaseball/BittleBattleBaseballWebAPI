@@ -105,12 +105,9 @@ namespace BittleBattleBaseball.ApplicationService
 
         private static void LoadBattingJson()
         {
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "MLBYearByYearLeagueBattingStats.json");
 
-
-            //var currDir = System.IO.Directory.GetCurrentDirectory();
-            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "MLBYearByYearLeagueBattingStats.json");//Environment.CurrentDirectory;
-
-           // var execPath = System.IO.Path.GetDirectory(Application.ExecutablePath);
+      
             if (File.Exists(fullPath))
             {
                 using (StreamReader r = new StreamReader(fullPath))
@@ -123,7 +120,6 @@ namespace BittleBattleBaseball.ApplicationService
 
         private static void LoadPitchingJson()
         {
-            //string envCurrDir = Environment.CurrentDirectory;
             string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "MLBYearByYearLeaguePitchingStats.json");
             if (File.Exists(fullPath))
             {
