@@ -105,7 +105,7 @@ namespace BittleBattleBaseball.ApplicationService
                         Bats = "r",//rosterPlayerResult.bats,  TODO - Don't have this info
                         Throws = "r",// rosterPlayerResult.throws, TODO - Don't have this info
                         PlayerName = rosterPlayerResult.person.fullName,
-                        DOB = new DateTime(), //rosterPlayerResult.birth_date, TODO - Don't have this
+                        DOB = new DateTime().AddDays(-10000), //rosterPlayerResult.birth_date, TODO - Don't have this
                         Position = rosterPlayerResult.position.abbreviation,
                         // NickName = rosterPlayerResult.name_sort
                         // Weight = Convert.ToInt32(rosterPlayerResult.weight),
