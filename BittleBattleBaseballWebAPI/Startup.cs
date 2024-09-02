@@ -22,13 +22,13 @@ namespace BittleBattleBaseballWebAPI
             services.AddControllers();
             services.AddSwaggerGen();
 
-            services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(policy =>
-                {
-                    policy.WithOrigins("http://localhost:4200", "https://bittlebattlebaseball.onrender.com", "http://bittlebattlebaseball.onrender.com").AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
-                });
-            });
+            //services.AddCors(options =>
+            //{
+            //    options.AddDefaultPolicy(policy =>
+            //    {
+            //        policy.WithOrigins("http://localhost:4200", "https://bittlebattlebaseball.onrender.com", "http://bittlebattlebaseball.onrender.com").AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+            //    });
+            //});
 
             services.AddResponseCaching();
         }
@@ -44,13 +44,18 @@ namespace BittleBattleBaseballWebAPI
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
              
             app.UseAuthorization();
 
-            app.UseCors();
+            app.UseCors(x => x
+                   .AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader());
+
+            app.UseHttpsRedirection();
 
             app.UseEndpoints(endpoints =>
             {
