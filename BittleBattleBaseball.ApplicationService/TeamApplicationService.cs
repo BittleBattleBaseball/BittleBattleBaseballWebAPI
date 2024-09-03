@@ -88,7 +88,7 @@ namespace BittleBattleBaseball.ApplicationService
 
         private async Task<RosterSearchResultViewModel> ConvertResponseToViewModel(string league, int season, int teamId, bool isDesignatedHitterEnabled, RosterBySeasonResponse dto)
         {
-            RosterSearchResultViewModel returnVal = new RosterSearchResultViewModel(isDesignatedHitterEnabled = isDesignatedHitterEnabled) { Id = teamId, Season = season };
+            RosterSearchResultViewModel returnVal = new RosterSearchResultViewModel(isDesignatedHitterEnabled) { Id = teamId, Season = season };
 
             if (dto != null && dto.roster != null && dto.roster.Any())
             {
@@ -147,8 +147,34 @@ namespace BittleBattleBaseball.ApplicationService
                             returnVal.Hitters.Add(playerSeasonVm);
                         }
                     }
-                    
 
+                    var hittersWithoutStats = returnVal.Hitters.Where(x => (x.OBP == 0.0M && x.SLG == 0.0M));
+                    if (hittersWithoutStats.Any())
+                    {
+                        MLBStatsApplicationService mlbStatsApplicationService = new MLBStatsApplicationService();
+                        var mlbLeagueAvgStats = mlbStatsApplicationService.GetLeagueBattingStatsByYear(season);
+                        var LeagueAvgOBP = Convert.ToDecimal(mlbLeagueAvgStats.OBP);
+                        var leagueAvgSLG = Convert.ToDecimal(mlbLeagueAvgStats.SLG);
+
+                        foreach(var emptyStatPlayer in hittersWithoutStats)
+                        {
+                            emptyStatPlayer.SLG = leagueAvgSLG;
+                            emptyStatPlayer.OBP = LeagueAvgOBP;
+                        }
+                    }
+
+                    var pitchersWithoutStats = returnVal.Pitchers.Where(x => (x.WHIP == 0.0M));
+                    if (pitchersWithoutStats.Any())
+                    {
+                        MLBStatsApplicationService mlbStatsApplicationService = new MLBStatsApplicationService();
+                        var mlbLeagueAvgStats = mlbStatsApplicationService.GetLeaguePitchingStatsByYear(season);
+                        var leagueAvgWhip = Convert.ToDecimal(mlbLeagueAvgStats.WHIP);
+
+                        foreach (var emptyStatPlayer in pitchersWithoutStats)
+                        {
+                            emptyStatPlayer.WHIP = leagueAvgWhip;
+                        }
+                    }
 
                 }
             }

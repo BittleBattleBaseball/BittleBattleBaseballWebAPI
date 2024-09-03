@@ -4,7 +4,6 @@ using System.Text;
 
 namespace BittleBattleBaseball.Models.MLBAPI.Responses
 {
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class Person
     {
         public int id { get; set; }
