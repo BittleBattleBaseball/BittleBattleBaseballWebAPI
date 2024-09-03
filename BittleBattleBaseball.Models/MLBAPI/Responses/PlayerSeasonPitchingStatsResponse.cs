@@ -1,28 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace BittleBattleBaseball.Models.MLBAPI.Responses
 {
+    public class Group
+    {
+        public string displayName { get; set; }
+    }
 
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
-  
+
     public class PlayerSeasonPitchingStatsResponse
     {
         public string copyright { get; set; }
         public List<PitchingStat> stats { get; set; }
-    }
-
-    public class PitchingStat
-    {
-        public Type type { get; set; }
-        public Group group { get; set; }
-        public int totalSplits { get; set; }
-        public List<object> exemptions { get; set; }
-        public List<PitchingSplit> splits { get; set; }
-        public List<object> splitsTiedWithOffset { get; set; }
-        public List<object> splitsTiedWithLimit { get; set; }
-        public string playerPool { get; set; }
     }
 
     public class PitchingSplit
@@ -33,8 +22,22 @@ namespace BittleBattleBaseball.Models.MLBAPI.Responses
         public Player player { get; set; }
         public League league { get; set; }
         public Sport sport { get; set; }
-        public int rank { get; set; }
-        public Position position { get; set; }
+        public string gameType { get; set; }
+    }
+
+    public class Sport
+    {
+        public int id { get; set; }
+        public string link { get; set; }
+        public string abbreviation { get; set; }
+    }
+
+    public class PitchingStat
+    {
+        public Type type { get; set; }
+        public Group group { get; set; }
+        public List<object> exemptions { get; set; }
+        public List<PitchingSplit> splits { get; set; }
     }
 
     public class PitchingStats

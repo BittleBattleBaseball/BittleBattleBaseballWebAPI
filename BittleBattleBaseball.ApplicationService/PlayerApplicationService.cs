@@ -18,7 +18,8 @@ namespace BittleBattleBaseball.ApplicationService
         {
             using (HttpClient client = new HttpClient())
             {
-                string responseBody = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/stats?stats=season&group=hitting&season={season}&teamId={teamId}&personId={playerId}");
+                string responseBody = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/people/{playerId}/stats?stats=statsSingleSeason&group=hitting&gameType=R&season={season}&teamId={teamId}");
+            
                 PlayerSeasonHittingStatsResponse dto = JsonConvert.DeserializeObject<PlayerSeasonHittingStatsResponse>(responseBody);
                 return GetPlayerSeasonHittingSingleTeamViewModelFromDTO(dto, playerId);
             }
@@ -73,7 +74,8 @@ namespace BittleBattleBaseball.ApplicationService
         {
             using (HttpClient client = new HttpClient())
             {
-                string responseBody = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/stats?stats=season&group=pitching&season={season}&teamId={teamId}&personId={playerId}");
+                string responseBody = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/people/{playerId}/stats?stats=statsSingleSeason&group=pitching&gameType=R&season={season}&teamId={teamId}");
+            
                 PlayerSeasonPitchingStatsResponse dto = JsonConvert.DeserializeObject<PlayerSeasonPitchingStatsResponse>(responseBody);
                 return GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(dto, playerId);
             }

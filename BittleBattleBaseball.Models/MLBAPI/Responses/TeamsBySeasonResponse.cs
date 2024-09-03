@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace BittleBattleBaseball.Models.MLBAPI.Responses
 {
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class League
     {
         public int id { get; set; }
@@ -16,13 +13,6 @@ namespace BittleBattleBaseball.Models.MLBAPI.Responses
     {
         public string copyright { get; set; }
         public List<Team> teams { get; set; }
-    }
-
-    public class Sport
-    {
-        public int id { get; set; }
-        public string link { get; set; }
-        public string name { get; set; }
     }
 
     public class Team
