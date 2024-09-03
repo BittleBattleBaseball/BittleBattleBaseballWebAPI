@@ -21,6 +21,7 @@ namespace BittleBattleBaseballWebAPI
             services.AddControllers();
             services.AddSwaggerGen();
             services.AddHealthChecks();
+            services.AddCors();
 
             //services.AddCors(options =>
             //{
