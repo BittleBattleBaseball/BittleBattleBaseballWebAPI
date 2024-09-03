@@ -44,13 +44,13 @@ namespace BittleBattleBaseballWebAPI
             app.UseSwagger();
             app.UseSwaggerUI();
 
-           // app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
-            app.UseRouting();         
-             
-            app.UseAuthorization();
+            app.UseRouting();
 
             app.UseEndpoints(endpoints => endpoints.MapHealthChecks("/health"));
+
+            app.UseAuthorization();          
 
             app.UseCors(x => x
                    .AllowAnyOrigin()
