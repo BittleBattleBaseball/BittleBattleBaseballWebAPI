@@ -14,14 +14,13 @@ namespace BittleBattleBaseballWebAPI
         }
 
         public IConfiguration Configuration { get; }
-        
+
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
             services.AddSwaggerGen();
-            services.AddHealthChecks();
-            services.AddCors();
 
             //services.AddCors(options =>
             //{
@@ -45,11 +44,9 @@ namespace BittleBattleBaseballWebAPI
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
-
-            app.UseEndpoints(endpoints => endpoints.MapHealthChecks("/health"));
 
             app.UseAuthorization();
 
