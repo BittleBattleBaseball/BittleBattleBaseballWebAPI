@@ -21,6 +21,7 @@ namespace BittleBattleBaseballWebAPI
         {
             services.AddControllers();
             services.AddSwaggerGen();
+            services.AddHealthChecks();
 
             //services.AddCors(options =>
             //{
@@ -44,9 +45,11 @@ namespace BittleBattleBaseballWebAPI
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseEndpoints(endpoints => endpoints.MapHealthChecks("/health"));
              
             app.UseAuthorization();
 
