@@ -22,9 +22,6 @@ namespace BittleBattleBaseball.ApplicationService
 
         public MLBYearByYearBattingStatsViewModel GetLeagueBattingStatsByYear(int season)
         {
-            if (season > 2019)
-                season = 2019;//TODO - TAKE THIS OUT .. it was just because their site was down
-
             MLBYearByYearBattingStatsDTO seasonStat = MLBStatsApplicationService.MLBYearByYearBattingStatsCache.FirstOrDefault(x => x.Year == season);
             if(seasonStat != null)
             {
@@ -47,11 +44,6 @@ namespace BittleBattleBaseball.ApplicationService
 
         public MLBYearByYearPitchingStatsViewModel GetLeaguePitchingStatsByYear(int season)
         {
-            if (season > 2019)
-                season = 2019;//TODO - TAKE THIS OUT .. it was just because their site was down
-
-           // return new MLBYearByYearPitchingStatsViewModel();
-
             MLBYearByYearPitchingStatsDTO seasonStat = MLBStatsApplicationService.MLBYearByYearPitchingStatsCache.FirstOrDefault(x => x.Year == season);
             if (seasonStat != null)
             {
@@ -79,7 +71,7 @@ namespace BittleBattleBaseball.ApplicationService
                 {
                     _mLBYearByYearBattingStatsCache = new List<MLBYearByYearBattingStatsDTO>();
 
-                    //TODO - Load from a .json file from disk
+                    //Load from a .json file from disk
                     LoadBattingJson();
                 }
 
@@ -95,7 +87,7 @@ namespace BittleBattleBaseball.ApplicationService
                 {
                     _mLBYearByYearPitchingStatsCache = new List<MLBYearByYearPitchingStatsDTO>();
 
-                    //TODO - Load from a .json file from disk
+                    //Load from a .json file from disk
                     LoadPitchingJson();
                 }
 

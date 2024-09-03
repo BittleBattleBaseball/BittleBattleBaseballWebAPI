@@ -23,11 +23,7 @@ namespace BittleBattleBaseball.Models.DTOs
     {
         public List<ImageSearchResult> results { get; set; }
         public string query { get; set; }
-        //public List<object> suggestions { get; set; }
         public int count { get; set; }
-        //public int start { get; set; }
-        //public int length { get; set; }
-        //public string time { get; set; }
     }
 
     public partial class GetPlayerImagesDTO

@@ -20,18 +20,18 @@ namespace BittleBattleBaseball.ApplicationService
             {
                 string responseBody = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/stats?stats=season&group=hitting&season={season}&teamId={teamId}&personId={playerId}");
                 PlayerSeasonHittingStatsResponse dto = JsonConvert.DeserializeObject<PlayerSeasonHittingStatsResponse>(responseBody);
-                return GetPlayerSeasonHittingSingleTeamViewModelFromDTO(dto, teamId, playerId);
+                return GetPlayerSeasonHittingSingleTeamViewModelFromDTO(dto, playerId);
             }
         }
 
-        private static HitterPlayerSeasonViewModel GetPlayerSeasonHittingSingleTeamViewModelFromDTO(PlayerSeasonHittingStatsResponse dto, int teamId, int playerId)
+        private static HitterPlayerSeasonViewModel GetPlayerSeasonHittingSingleTeamViewModelFromDTO(PlayerSeasonHittingStatsResponse dto, int playerId)
         {
             HitterPlayerSeasonViewModel returnVal = new HitterPlayerSeasonViewModel();
 
             if (dto != null && dto.stats != null)
             {
                 var playerStat = dto.stats.FirstOrDefault();
-                var playerSplit = playerStat.splits.FirstOrDefault(s => s.player.id == playerId);
+                var playerSplit = playerStat?.splits.FirstOrDefault(s => s.player.id == playerId);
                 if (playerSplit != null)
                 {
                     var playerStats = playerSplit.stat;
@@ -75,18 +75,18 @@ namespace BittleBattleBaseball.ApplicationService
             {
                 string responseBody = await client.GetStringAsync($"https://statsapi.mlb.com/api/v1/stats?stats=season&group=pitching&season={season}&teamId={teamId}&personId={playerId}");
                 PlayerSeasonPitchingStatsResponse dto = JsonConvert.DeserializeObject<PlayerSeasonPitchingStatsResponse>(responseBody);
-                return GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(dto, teamId, playerId);
+                return GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(dto, playerId);
             }
         }
 
-        private static PitcherPlayerSeasonViewModel GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(PlayerSeasonPitchingStatsResponse dto, int teamId, int playerId)
+        private static PitcherPlayerSeasonViewModel GetPlayerSeasonPitchingSingleTeamViewModelFromDTO(PlayerSeasonPitchingStatsResponse dto, int playerId)
         {
             PitcherPlayerSeasonViewModel returnVal = new PitcherPlayerSeasonViewModel();
 
             if (dto != null && dto.stats != null)
             {
                 var playerStat = dto.stats.FirstOrDefault();
-                var playerSplit = playerStat.splits.FirstOrDefault(s => s.player.id == playerId);
+                var playerSplit = playerStat?.splits.FirstOrDefault(s => s.player.id == playerId);
                 if (playerSplit != null)
                 {
                     var playerStats = playerSplit.stat;
