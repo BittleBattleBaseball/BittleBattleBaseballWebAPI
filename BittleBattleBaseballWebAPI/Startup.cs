@@ -51,12 +51,19 @@ namespace BittleBattleBaseballWebAPI
 
             app.UseEndpoints(endpoints => endpoints.MapHealthChecks("/health"));
 
-            app.UseAuthorization();          
+            app.UseAuthorization();
+
+            //app.UseCors(x => x
+            //       .AllowAnyOrigin()
+            //       .AllowAnyMethod()
+            //       .AllowAnyHeader());
 
             app.UseCors(x => x
-                   .AllowAnyOrigin()
                    .AllowAnyMethod()
-                   .AllowAnyHeader());
+                   .AllowAnyHeader()
+                   .SetIsOriginAllowed(origin => true)
+                   .AllowCredentials());
+
 
             app.UseHttpsRedirection();
 
