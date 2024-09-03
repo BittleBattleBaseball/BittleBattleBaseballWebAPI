@@ -53,17 +53,10 @@ namespace BittleBattleBaseballWebAPI
 
             app.UseAuthorization();
 
-            //app.UseCors(x => x
-            //       .AllowAnyOrigin()
-            //       .AllowAnyMethod()
-            //       .AllowAnyHeader());
-
             app.UseCors(x => x
+                   .AllowAnyOrigin()
                    .AllowAnyMethod()
-                   .AllowAnyHeader()
-                   .SetIsOriginAllowed(origin => true)
-                   .AllowCredentials());
-
+                   .AllowAnyHeader());
 
             app.UseHttpsRedirection();
 
