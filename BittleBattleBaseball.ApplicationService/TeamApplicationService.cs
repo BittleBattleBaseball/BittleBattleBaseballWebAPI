@@ -120,7 +120,7 @@ namespace BittleBattleBaseball.ApplicationService
                         PitcherPlayerSeasonViewModel playerSeasonVm;
 
                         playerSeasonVm = await playerService.GetPlayerSeasonPitchingStats(season, playerVm.Id, teamId);
-                        if (playerSeasonVm != null)
+                        if (playerSeasonVm != null && !(playerSeasonVm.ERA == 0.0M && playerSeasonVm.WHIP == 0.0M))
                         {
                             playerSeasonVm.GameType = "R";
                             playerSeasonVm.LeagueType = league;
@@ -138,7 +138,7 @@ namespace BittleBattleBaseball.ApplicationService
                         //else
                             playerSeasonVm = await playerService.GetPlayerSeasonHittingStats(season, playerVm.Id, teamId);
 
-                        if (playerSeasonVm != null)
+                        if (playerSeasonVm != null && !(playerSeasonVm.AVG == 0.0M && playerSeasonVm.OBP == 0.0M))
                         {
                             playerSeasonVm.GameType = "R";
                             playerSeasonVm.LeagueType = league;
