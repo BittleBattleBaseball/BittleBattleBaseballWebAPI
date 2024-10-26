@@ -111,7 +111,7 @@ namespace BittleBattleBaseball.Models.ViewModels
                                     continue;
                                 }
                             }
-                            else if (this.IsDesignatedHitterEnabled && !hitter.Player.Position.Contains("P") && designatedHitter == null)
+                            else if (this.IsDesignatedHitterEnabled && (hitter.Player.Position.Equals("TWP") || !hitter.Player.Position.Contains("P")) && designatedHitter == null)
                             {
                                 hitter.Player.Position = "DH";
                                 designatedHitter = hitter;

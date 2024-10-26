@@ -114,8 +114,7 @@ namespace BittleBattleBaseball.ApplicationService
 
                     playerVm.PlayerImageURL = "https://securea.mlb.com/mlb/images/players/head_shot/" + playerVm.Id + ".jpg";
 
-                    
-                    if (rosterPlayerResult.position.abbreviation.ToLower().Trim().Contains("p"))
+                    if (rosterPlayerResult.position.abbreviation.ToLower().Trim().Contains("twp")) //Shohei Ohtani Anomaly
                     {
                         PitcherPlayerSeasonViewModel playerSeasonVm;
 
@@ -128,23 +127,58 @@ namespace BittleBattleBaseball.ApplicationService
                             playerSeasonVm.Season = season;
                             returnVal.Pitchers.Add(playerSeasonVm);
                         }
-                    }
-                    else
-                    {
-                        HitterPlayerSeasonViewModel playerSeasonVm;
+
+                        HitterPlayerSeasonViewModel playerHitterSeasonVm;
 
                         //if (season == DateTime.Today.Year)
                         //    playerSeasonVm = playerService.GetPlayerProjectedSeasonHittingStats(season, playerVm.Id, league);
                         //else
+                        playerHitterSeasonVm = await playerService.GetPlayerSeasonHittingStats(season, playerVm.Id, teamId);
+
+                        if (playerHitterSeasonVm != null && !(playerHitterSeasonVm.AVG == 0.0M && playerHitterSeasonVm.OBP == 0.0M))
+                        {
+                            playerHitterSeasonVm.GameType = "R";
+                            playerHitterSeasonVm.LeagueType = league;
+                            playerHitterSeasonVm.Player = playerVm;
+                            playerHitterSeasonVm.Season = season;
+                            returnVal.Hitters.Add(playerHitterSeasonVm);
+                        }
+
+
+                    }
+                    else
+                    { 
+                        if (rosterPlayerResult.position.abbreviation.ToLower().Trim().Contains("p"))
+                        {
+                            PitcherPlayerSeasonViewModel playerSeasonVm;
+
+                            playerSeasonVm = await playerService.GetPlayerSeasonPitchingStats(season, playerVm.Id, teamId);
+                            if (playerSeasonVm != null && !(playerSeasonVm.ERA == 0.0M && playerSeasonVm.WHIP == 0.0M))
+                            {
+                                playerSeasonVm.GameType = "R";
+                                playerSeasonVm.LeagueType = league;
+                                playerSeasonVm.Player = playerVm;
+                                playerSeasonVm.Season = season;
+                                returnVal.Pitchers.Add(playerSeasonVm);
+                            }
+                        }
+                        else
+                        {
+                            HitterPlayerSeasonViewModel playerSeasonVm;
+
+                            //if (season == DateTime.Today.Year)
+                            //    playerSeasonVm = playerService.GetPlayerProjectedSeasonHittingStats(season, playerVm.Id, league);
+                            //else
                             playerSeasonVm = await playerService.GetPlayerSeasonHittingStats(season, playerVm.Id, teamId);
 
-                        if (playerSeasonVm != null && !(playerSeasonVm.AVG == 0.0M && playerSeasonVm.OBP == 0.0M))
-                        {
-                            playerSeasonVm.GameType = "R";
-                            playerSeasonVm.LeagueType = league;
-                            playerSeasonVm.Player = playerVm;
-                            playerSeasonVm.Season = season;
-                            returnVal.Hitters.Add(playerSeasonVm);
+                            if (playerSeasonVm != null && !(playerSeasonVm.AVG == 0.0M && playerSeasonVm.OBP == 0.0M))
+                            {
+                                playerSeasonVm.GameType = "R";
+                                playerSeasonVm.LeagueType = league;
+                                playerSeasonVm.Player = playerVm;
+                                playerSeasonVm.Season = season;
+                                returnVal.Hitters.Add(playerSeasonVm);
+                            }
                         }
                     }
 
